@@ -4,26 +4,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nation Auth - Admin Panel</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #1e1e1e;
+            color: white;
+        }
+        .container {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 100px;
+        }
+        input, button {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            background: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="admin-login">
         <h2>Admin Login</h2>
         <input type="text" id="admin-username" placeholder="Username">
         <input type="password" id="admin-password" placeholder="Password">
         <button onclick="adminLogin()">Login</button>
-        <p id="admin-error" class="error"></p>
+        <p id="admin-error" style="color: red;"></p>
     </div>
 
-    <div class="container user-panel" style="display: none;">
+    <div class="container hidden" id="user-panel">
         <h2>Add User</h2>
         <input type="text" id="new-username" placeholder="Username">
         <input type="password" id="new-password" placeholder="Password">
-        <input type="text" id="new-expiry" placeholder="Expiry Date (YYYY-MM-DD)">
+        <input type="text" id="new-expiry" placeholder="Expiry (DD-MM-YYYY)">
         <button onclick="addUser()">Add User</button>
         <p id="user-message"></p>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        function adminLogin() {
+            const username = document.getElementById("admin-username").value;
+            const password = document.getElementById("admin-password").value;
+            if (username === "nationcheats" && password === "4263ff") {
+                document.getElementById("admin-login").classList.add("hidden");
+                document.getElementById("user-panel").classList.remove("hidden");
+            } else {
+                document.getElementById("admin-error").innerText = "Invalid Credentials!";
+            }
+        }
+
+        function addUser() {
+            const username = document.getElementById("new-username").value;
+            const password = document.getElementById("new-password").value;
+            const expiry = document.getElementById("new-expiry").value;
+            const hwid = "N/A"; // HWID not set in HTML
+            const userData = `${username} n/ ${password} n/ ${expiry} n/ ${hwid}\n`;
+
+            fetch('https://api.github.com/repos/gamerzmgrgm/NationAuth/contents/api/users.txt', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'token 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',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: "Added new user",
+                    content: btoa(userData),
+                    sha: "" // Required if file already exists
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("user-message").innerText = "User added successfully!";
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
 </body>
 </html>
