@@ -1,60 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Nation Auth Admin</title>
-    <script>
-        function adminLogin() {
-            var username = document.getElementById("adminUser").value;
-            var password = document.getElementById("adminPass").value;
-            
-            if (username === "nationcheats" && password === "4263ff") {
-                document.getElementById("adminPanel").style.display = "block";
-                document.getElementById("loginPanel").style.display = "none";
-            } else {
-                alert("Invalid admin credentials");
-            }
-        }
-        
-        function addUser() {
-            var username = document.getElementById("newUsername").value;
-            var password = document.getElementById("newPassword").value;
-            var expiry = document.getElementById("expiry").value;
-            
-            if (!username || !password || !expiry) {
-                alert("Please fill all fields");
-                return;
-            }
-            
-            fetch("https://nation-auth.vercel.app/adduser", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password, expiry })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-            })
-            .catch(error => {
-                alert("Error adding user");
-                console.error(error);
-            });
-        }
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nation Auth - Admin Panel</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="loginPanel">
+    <div class="container">
         <h2>Admin Login</h2>
-        <input type="text" id="adminUser" placeholder="Username">
-        <input type="password" id="adminPass" placeholder="Password">
+        <input type="text" id="admin-username" placeholder="Username">
+        <input type="password" id="admin-password" placeholder="Password">
         <button onclick="adminLogin()">Login</button>
+        <p id="admin-error" class="error"></p>
     </div>
 
-    <div id="adminPanel" style="display:none;">
+    <div class="container user-panel" style="display: none;">
         <h2>Add User</h2>
-        <input type="text" id="newUsername" placeholder="Username">
-        <input type="password" id="newPassword" placeholder="Password">
-        <input type="date" id="expiry" placeholder="Expiry Date">
+        <input type="text" id="new-username" placeholder="Username">
+        <input type="password" id="new-password" placeholder="Password">
+        <input type="text" id="new-expiry" placeholder="Expiry Date (YYYY-MM-DD)">
         <button onclick="addUser()">Add User</button>
+        <p id="user-message"></p>
     </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
