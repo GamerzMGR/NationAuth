@@ -7,28 +7,36 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #1e1e1e;
+            background-color: #121212;
             color: white;
+            text-align: center;
         }
         .container {
-            background: #333;
-            padding: 20px;
-            border-radius: 10px;
-            display: inline-block;
             margin-top: 100px;
+            max-width: 400px;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
         }
         input, button {
             width: 90%;
             padding: 10px;
             margin: 10px 0;
-            border-radius: 5px;
             border: none;
+            border-radius: 5px;
+        }
+        input {
+            background: #333;
+            color: white;
         }
         button {
             background: #007BFF;
             color: white;
             cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
         }
         .hidden {
             display: none;
@@ -36,60 +44,106 @@
     </style>
 </head>
 <body>
-    <div class="container" id="admin-login">
-        <h2>Admin Login</h2>
-        <input type="text" id="admin-username" placeholder="Username">
-        <input type="password" id="admin-password" placeholder="Password">
-        <button onclick="adminLogin()">Login</button>
-        <p id="admin-error" style="color: red;"></p>
-    </div>
 
-    <div class="container hidden" id="user-panel">
-        <h2>Add User</h2>
-        <input type="text" id="new-username" placeholder="Username">
-        <input type="password" id="new-password" placeholder="Password">
-        <input type="text" id="new-expiry" placeholder="Expiry (DD-MM-YYYY)">
-        <button onclick="addUser()">Add User</button>
-        <p id="user-message"></p>
-    </div>
+<div class="container" id="loginForm">
+    <h2>Admin Login</h2>
+    <input type="text" id="adminUser" placeholder="Username">
+    <input type="password" id="adminPass" placeholder="Password">
+    <button onclick="adminLogin()">Login</button>
+</div>
 
-    <script>
-        function adminLogin() {
-            const username = document.getElementById("admin-username").value;
-            const password = document.getElementById("admin-password").value;
-            if (username === "nationcheats" && password === "4263ff") {
-                document.getElementById("admin-login").classList.add("hidden");
-                document.getElementById("user-panel").classList.remove("hidden");
-            } else {
-                document.getElementById("admin-error").innerText = "Invalid Credentials!";
+<div class="container hidden" id="userForm">
+    <h2>Add New User</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <input type="date" id="expiry" placeholder="Expiry Date">
+    <input type="text" id="hwid" placeholder="HWID (Optional)">
+    <button onclick="addUser()">Add User</button>
+</div>
+
+<script>
+    // ✅ Admin Login System
+    function adminLogin() {
+        const adminUsername = "nationcheats"; // ✅ Set your admin username
+        const adminPassword = "4263ff"; // ✅ Set your admin password
+
+        const inputUser = document.getElementById("adminUser").value;
+        const inputPass = document.getElementById("adminPass").value;
+
+        if (inputUser === adminUsername && inputPass === adminPassword) {
+            alert("Login Successful!");
+            document.getElementById("loginForm").classList.add("hidden");
+            document.getElementById("userForm").classList.remove("hidden");
+        } else {
+            alert("Invalid Admin Credentials!");
+        }
+    }
+
+    // ✅ GitHub API to Add User to `data.txt`
+    async function addUser() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const expiry = document.getElementById("expiry").value;
+        const hwid = document.getElementById("hwid").value || "Not Assigned"; // Default HWID if empty
+
+        if (!username || !password || !expiry) {
+            alert("Please fill all fields!");
+            return;
+        }
+
+        const githubToken = "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"; // 🔹 Replace with your token
+        const githubUsername = "GamerzMGR"; // 🔹 Your GitHub Username
+        const repo = "NationAuth"; // 🔹 Your GitHub Repository Name
+        const filePath = "data.txt"; // 🔹 File where users are stored
+        const apiUrl = `https://api.github.com/repos/${githubUsername}/${repo}/contents/${filePath}`;
+
+        try {
+            let existingContent = "";
+            let sha = "";
+
+            // Step 1: Fetch existing content
+            const response = await fetch(apiUrl, {
+                headers: { Authorization: `token ${githubToken}` },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                existingContent = atob(data.content); // Decode base64 content
+                sha = data.sha; // Get file SHA for updating
             }
-        }
 
-        function addUser() {
-            const username = document.getElementById("new-username").value;
-            const password = document.getElementById("new-password").value;
-            const expiry = document.getElementById("new-expiry").value;
-            const hwid = "N/A"; // HWID not set in HTML
-            const userData = `${username} n/ ${password} n/ ${expiry} n/ ${hwid}\n`;
+            // Step 2: Add 2 blank lines before the new user data
+            const newUser = `\n\n${username} n/ ${password} n/ ${expiry} n/ ${hwid}`;
+            const updatedContent = existingContent + newUser;
+            const encodedContent = btoa(updatedContent); // Encode to base64
 
-            fetch('https://api.github.com/repos/GamerzMGR/NationAuth/contents/api/users.txt', {
-                method: 'PUT',
+            // Step 3: Send request to update/create file
+            const requestBody = {
+                message: "Added new user",
+                content: encodedContent,
+                sha: sha || undefined, // If file exists, include SHA
+            };
+
+            const uploadResponse = await fetch(apiUrl, {
+                method: "PUT",
                 headers: {
-                    'Authorization': 'token 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',
-                    'Content-Type': 'application/json'
+                    Authorization: `token ${githubToken}`,
+                    "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    message: "Added new user",
-                    content: btoa(userData),
-                    sha: "" // Required if file already exists
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("user-message").innerText = "User added successfully!";
-            })
-            .catch(error => console.error("Error:", error));
+                body: JSON.stringify(requestBody),
+            });
+
+            if (uploadResponse.ok) {
+                alert("User added successfully!");
+            } else {
+                const errorMsg = await uploadResponse.json();
+                alert("Error: " + errorMsg.message);
+            }
+        } catch (error) {
+            alert("Failed to add user: " + error.message);
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
